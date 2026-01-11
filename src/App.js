@@ -4,12 +4,13 @@ import {BrowserRouter,Routes,Route} from 'react-router-dom'
 import SimpleNotification from './Notification';
 import React, { useState, useEffect } from "react";
 import socketIOClient from "socket.io-client";
-const ENDPOINT = "http://localhost:4001";
+const ENDPOINT = process.env.BACKEND_URL_LOCAL ;
+const BACKEND_URL=process.env.BACKEND_URL || ENDPOINT;
 function App() {
   const [response, setResponse] = useState("");
 
   useEffect(() => {
-    const socket = socketIOClient(ENDPOINT);
+    const socket = socketIOClient(BACKEND_URL);
     socket.on("FromAPI", data => {
       setResponse(data);
       
