@@ -4,62 +4,53 @@ import {BrowserRouter,Routes,Route} from 'react-router-dom'
 import SimpleNotification from './Notification';
 import React, { useState, useEffect } from "react";
 import socketIOClient from "socket.io-client";
-const ENDPOINT = process.env.BACKEND_URL_LOCAL ;
-const BACKEND_URL=process.env.BACKEND_URL;
+
+// For React apps, environment variables must start with REACT_APP_
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:4001";
+
 function App() {
   const [response, setResponse] = useState("");
 
   useEffect(() => {
-    const socket = socketIOClient(BACKEND_URL);
-    socket.on("FromAPI", data => {
-      console.log("Received data from API:", data)
-      setResponse(data);
-      
+    console.log("Connecting to:", BACKEND_URL); 
+    
+    const socket = socketIOClient(BACKEND_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
-    //CLEAN UP THE EFFECT COMPONENTWILLUNMOUNT
-    return()=>socket.disconnect();
+
+    socket.on("connect", () => {
+      console.log("Socket connected successfully!");
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Connection error:", error);
+    });
+
+    socket.on("FromAPI", data => {
+      console.log("Received data from API:", data);
+      setResponse(data);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+    });
+
+    return () => {
+      console.log("Cleaning up socket connection");
+      socket.disconnect();
+    };
   }, []);
 
   return (
    <BrowserRouter>
-   
-   <Routes>
-    <Route path='/' element={<SimpleNotification/>}></Route>
-   </Routes>
-
-    
-      <SimpleNotification value={response}/>
-    
-
+     <Routes>
+      <Route path='/' element={<SimpleNotification value={response}/>}></Route>
+     </Routes>
    </BrowserRouter>
   );
 }
 
 export default App;
-
-
-// import React, { useState, useEffect } from "react";
-// import socketIOClient from "socket.io-client";
-// const ENDPOINT = "http://localhost:4001";
-
-// function App() {
-//   const [response, setResponse] = useState("");
-
-//   useEffect(() => {
-//     const socket = socketIOClient(ENDPOINT);
-//     socket.on("FromAPI", data => {
-//       setResponse(data);
-//     });
-//     //CLEAN UP THE EFFECT COMPONENTWILLUNMOUNT
-//     return()=>socket.disconnect();
-//   }, []);
-
-//   return (
-//     <p>
-//       It's <time dateTime={response}>{response}</time>
-//     </p>
-//   );
-// }
-
-// export default App;
-
