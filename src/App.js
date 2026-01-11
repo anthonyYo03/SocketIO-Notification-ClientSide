@@ -5,13 +5,14 @@ import SimpleNotification from './Notification';
 import React, { useState, useEffect } from "react";
 import socketIOClient from "socket.io-client";
 const ENDPOINT = process.env.BACKEND_URL_LOCAL ;
-const BACKEND_URL=process.env.BACKEND_URL || ENDPOINT;
+const BACKEND_URL=process.env.BACKEND_URL;
 function App() {
   const [response, setResponse] = useState("");
 
   useEffect(() => {
     const socket = socketIOClient(BACKEND_URL);
     socket.on("FromAPI", data => {
+      console.log("Received data from API:", data)
       setResponse(data);
       
     });
